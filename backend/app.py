@@ -1066,21 +1066,21 @@ def mcp_toolkit_call_tool(server_name, tool_name):
 
 # Import Docker MCP handler
 try:
-    from docker_mcp_handler import docker_mcp_handler
-    # Update configuration with the loaded MCP config
-    docker_mcp_handler.config = mcp_config
+    from docker_mcp_handler import DockerMCPHandler
     
-    # Only initialize servers if Docker is available
+    # Create an instance of the DockerMCPHandler class with the loaded MCP config
+    docker_mcp_handler = DockerMCPHandler(config=mcp_config)
+    
+    # Check if Docker is available
     if docker_mcp_handler.docker_available:
-        docker_mcp_handler._init_servers()
         docker_mcp_available = True
         logger.info("Docker MCP handler initialized successfully")
     else:
         docker_mcp_available = False
         logger.warning("Docker is not available. Docker MCP functionality will be limited.")
-except ImportError:
+except ImportError as e:
     docker_mcp_available = False
-    logger.warning("Docker MCP handler not available")
+    logger.warning(f"Docker MCP handler not available: {e}")
     docker_mcp_handler = None
 except Exception as e:
     docker_mcp_available = False
