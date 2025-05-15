@@ -1,0 +1,21 @@
+{
+  "lastUpdated": "2025-05-15T22:23:10.550Z",
+  "servers": {
+    "brave-search": {
+      "running": true,
+      "startTime": "2025-05-15T22:23:10.527Z"
+    },
+    "filesystem": {
+      "running": true,
+      "startTime": "2025-05-15T22:23:10.536Z"
+    },
+    "github": {
+      "running": true,
+      "startTime": "2025-05-15T22:23:10.544Z"
+    },
+    "memory": {
+      "running": true,
+      "startTime": "2025-05-15T22:23:10.549Z"
+    }
+  }
+}

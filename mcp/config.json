@@ -1,0 +1,28 @@
+{
+  "servers": {
+    "brave-search": {
+      "port": 3001,
+      "config": {
+        "apiKey": "${BRAVE_API_KEY}"
+      }
+    },
+    "filesystem": {
+      "port": 3002,
+      "config": {
+        "allowedDirectories": [
+          "${HOME}"
+        ]
+      }
+    },
+    "github": {
+      "port": 3003,
+      "config": {
+        "token": "${GITHUB_TOKEN}"
+      }
+    },
+    "memory": {
+      "port": 3004,
+      "config": {}
+    }
+  }
+}

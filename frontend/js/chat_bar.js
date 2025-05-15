@@ -282,13 +282,157 @@ function renderChatMessage(sender, content) {
   // Different styling/labels based on sender
   const senderLabel = sender === 'user' ? 'You' : 'Mama Bear';
   
+  // Process the content for better formatting
+  let formattedContent = processMessageContent(content);
+  
   bubble.innerHTML = `
     <div class="chat-bubble">
-      <div class="sender-label" style="font-weight: 600; margin-bottom: 4px; ${sender === 'user' ? 'text-align: right;' : ''}">${senderLabel}:</div>
-      ${content}
+      <div class="sender-label" style="font-weight: 600; margin-bottom: 8px; ${sender === 'user' ? 'text-align: right;' : ''}">${senderLabel}:</div>
+      <div class="chat-content">${formattedContent}</div>
     </div>
   `;
   
   chatHistory.appendChild(bubble);
   chatHistory.scrollTop = chatHistory.scrollHeight;
+}
+
+/**
+ * Process message content to handle newlines and basic Markdown formatting
+ * @param {string} content - The raw message content
+ * @returns {string} - Formatted HTML content
+ */
+function processMessageContent(content) {
+  if (!content) return '';
+  
+  // Handle code blocks (```)
+  content = content.replace(/```([\s\S]*?)```/g, (match, code) => {
+    return `<pre><code>${escapeHtml(code.trim())}</code></pre>`;
+  });
+  
+  // Handle inline code (`)
+  content = content.replace(/`([^`]+)`/g, (match, code) => {
+    return `<code>${escapeHtml(code)}</code>`;
+  });
+  
+  // Handle bold (**)
+  content = content.replace(/\*\*([^*]+)\*\*/g, '<strong>$1</strong>');
+  
+  // Handle italic (*)
+  content = content.replace(/\*([^*]+)\*/g, '<em>$1</em>');
+  
+  // Handle lists
+  let inList = false;
+  let listType = '';
+  
+  // Process content line by line for paragraphs and lists
+  const lines = content.split('\n');
+  let processedLines = [];
+  let currentParagraph = [];
+  
+  for (let i = 0; i < lines.length; i++) {
+    const line = lines[i].trim();
+    
+    // Check for list items
+    if (line.match(/^\d+\. /)) {
+      // Ordered list item
+      if (currentParagraph.length > 0) {
+        processedLines.push(`<p>${currentParagraph.join(' ')}</p>`);
+        currentParagraph = [];
+      }
+      
+      if (listType !== 'ol') {
+        if (inList) processedLines.push('</ul>');
+        processedLines.push('<ol>');
+        inList = true;
+        listType = 'ol';
+      }
+      
+      processedLines.push(`<li>${line.replace(/^\d+\. /, '')}</li>`);
+    } else if (line.match(/^- /)) {
+      // Unordered list item
+      if (currentParagraph.length > 0) {
+        processedLines.push(`<p>${currentParagraph.join(' ')}</p>`);
+        currentParagraph = [];
+      }
+      
+      if (listType !== 'ul') {
+        if (inList) processedLines.push('</ol>');
+        processedLines.push('<ul>');
+        inList = true;
+        listType = 'ul';
+      }
+      
+      processedLines.push(`<li>${line.substring(2)}</li>`);
+    } else if (line === '') {
+      // Empty line - end paragraph and list if we're in one
+      if (inList) {
+        processedLines.push(listType === 'ul' ? '</ul>' : '</ol>');
+        inList = false;
+        listType = '';
+      }
+      
+      if (currentParagraph.length > 0) {
+        processedLines.push(`<p>${currentParagraph.join(' ')}</p>`);
+        currentParagraph = [];
+      }
+    } else {
+      // Regular line - add to current paragraph
+      if (inList) {
+        processedLines.push(listType === 'ul' ? '</ul>' : '</ol>');
+        inList = false;
+        listType = '';
+      }
+      
+      // Check for headers
+      if (line.startsWith('# ')) {
+        if (currentParagraph.length > 0) {
+          processedLines.push(`<p>${currentParagraph.join(' ')}</p>`);
+          currentParagraph = [];
+        }
+        processedLines.push(`<h1>${line.substring(2)}</h1>`);
+      } else if (line.startsWith('## ')) {
+        if (currentParagraph.length > 0) {
+          processedLines.push(`<p>${currentParagraph.join(' ')}</p>`);
+          currentParagraph = [];
+        }
+        processedLines.push(`<h2>${line.substring(3)}</h2>`);
+      } else if (line.startsWith('### ')) {
+        if (currentParagraph.length > 0) {
+          processedLines.push(`<p>${currentParagraph.join(' ')}</p>`);
+          currentParagraph = [];
+        }
+        processedLines.push(`<h3>${line.substring(4)}</h3>`);
+      } else {
+        // Normal paragraph text - preserve individual lines
+        if (currentParagraph.length > 0 && line) {
+          currentParagraph.push(line);
+        } else if (line) {
+          currentParagraph = [line];
+        }
+      }
+    }
+  }
+  
+  // Close any open list
+  if (inList) {
+    processedLines.push(listType === 'ul' ? '</ul>' : '</ol>');
+  }
+  
+  // Process any remaining paragraph
+  if (currentParagraph.length > 0) {
+    processedLines.push(`<p>${currentParagraph.join(' ')}</p>`);
+  }
+  
+  return processedLines.join('\n');
+}
+
+/**
+ * Escape HTML special characters
+ * @param {string} html - Content to escape
+ * @returns {string} - Escaped content
+ */
+function escapeHtml(html) {
+  const div = document.createElement('div');
+  div.textContent = html;
+  return div.innerHTML;
 }

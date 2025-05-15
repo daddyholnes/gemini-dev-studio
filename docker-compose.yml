@@ -1,0 +1,33 @@
+version: '3.8'
+
+services:
+  podplay-build:
+    build:
+      context: .
+      dockerfile: docker/Dockerfile
+    ports:
+      - "5000:5000"  # Flask app
+      - "3000-3100:3000-3100"  # Range for MCP servers
+    environment:
+      - FLASK_APP=backend/app.py
+      - FLASK_DEBUG=0
+      - GEMINI_API_KEY=${GEMINI_API_KEY}
+      - BRAVE_API_KEY=${BRAVE_API_KEY}
+      - GITHUB_TOKEN=${GITHUB_TOKEN}
+      - DATABASE_URL=${DATABASE_URL}
+      - OPENAI_API_KEY=${OPENAI_API_KEY}
+      - PERPLEXITY_API_KEY=${PERPLEXITY_API_KEY}
+      - LANGSMITH_API_KEY=${LANGSMITH_API_KEY}
+      - LANGSMITH_PROJECT=${LANGSMITH_PROJECT}
+    volumes:
+      - ./backend:/app/backend
+      - ./frontend:/app/frontend
+      - ~/.mcp:/root/.mcp
+      - ~/.podplay:/root/.podplay
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:5000/api/environment/status"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s

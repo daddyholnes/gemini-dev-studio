@@ -1,8 +1,24 @@
 # Environment variables
 .env
+*env*
+*.env.*
+
+# Credentials and API keys
+credentials.txt
+*credentials*
+secrets.txt
+*secrets*
+api_keys.txt
+*api_keys*
+*secret_key*
+*apikey*
 
 # Firebase credentials
 *-firebase-adminsdk-*.json
+*firebase*
+*serviceaccount*
+*google-credentials*
+*-c291c95989bf.json
 
 # Sensitive conversation histories
 *-Handle-With-Care.txt

@@ -1,0 +1,61 @@
+{
+  "mcps": [
+    {
+      "name": "brave-search",
+      "enabled": true,
+      "api": "brave-search",
+      "api_key": "${BRAVE_API_KEY}",
+      "endpoint": "https://api.search.brave.com/res/v1/web/search",
+      "type": "native"
+    },
+    {
+      "name": "filesystem",
+      "enabled": true,
+      "port": 3002,
+      "type": "native"
+    },
+    {
+      "name": "github",
+      "enabled": true,
+      "api_key": "${GITHUB_TOKEN}",
+      "port": 3003,
+      "type": "native"
+    },
+    {
+      "name": "memory",
+      "enabled": true,
+      "port": 3004,
+      "type": "native"
+    },
+    {
+      "name": "docker-brave",
+      "enabled": true,
+      "image": "docker/mcp/brave-search",
+      "port": 8811,
+      "api_key": "${BRAVE_API_KEY}",
+      "type": "docker"
+    },
+    {
+      "name": "docker-filesystem",
+      "enabled": true,
+      "image": "docker/mcp/filesystem",
+      "port": 8812,
+      "type": "docker"
+    },
+    {
+      "name": "docker-github",
+      "enabled": true,
+      "image": "docker/mcp/github",
+      "port": 8813,
+      "api_key": "${GITHUB_TOKEN}",
+      "type": "docker"
+    },
+    {
+      "name": "docker-time",
+      "enabled": true,
+      "image": "docker/mcp/time",
+      "port": 8814,
+      "type": "docker"
+    }
+  ]
+}

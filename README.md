@@ -1,33 +1,94 @@
-# Gemini Developer Studio (Podplay Build)
+# Podplay Build: Your AI Development Sanctuary
 
-## Overview
-A persistent, agentic developer environment with full session memory, timeline navigation, and Gemini/Vertex AI integration. Designed for calm, empowering developer workflows.
+![Podplay Build](docs/images/podplay-banner.png)
 
-### Key Features
-- Persistent session memory (chat & doc usage)
-- Timeline visualization and navigation
-- Branching, editing, and pruning of agentic memory
-- Conversation-first Lead Developer Agent (Gemini-powered)
-- MCP tool integration: code execution, file ops, web search, etc.
-- Accessible, beautiful UI (dark mode, keyboard nav, ARIA)
+## 📘 Overview
 
-## Setup & Security
+Podplay Build is a personal AI development sanctuary designed to provide a calm, empowering workflow through a persistent, agentic environment with full session memory, timeline navigation, and advanced AI capabilities. It serves as both a coding companion and a creative space for developing software projects with Mama Bear, your AI lead developer.
 
-1. **Environment Variables**
-   - All sensitive keys (Gemini, Vertex, DB, etc.) must be set in a `.env` file (not checked in to GitHub).
-   - Example `.env` (never commit this!):
-     ```env
-     GEMINI_API_KEY=your-key-here
-     VERTEX_PROJECT_ID=your-project-id
-     SECRET_KEY=your-flask-secret
-     # ...other secrets
-     ```
-   - The backend loads secrets via `os.environ` or dotenv. No secrets are hardcoded.
+### 🎯 Purpose & Vision
 
-2. **Sensitive Logic**
-   - Remove any test/demo API keys or hardcoded secrets before production or GitHub upload.
-   - Review code for accidental logging or exposure of sensitive info.
-   - Use `os.environ.get('KEY')` everywhere for credentials.
+Podplay Build transforms the software development experience by creating a stable, supportive sanctuary where ideas can flourish without the cognitive overhead typical of complex development environments. It provides an intuitive, conversation-based approach to coding backed by powerful AI capabilities, making development more accessible, enjoyable, and productive.
+
+## ✨ Key Features
+
+### Core Capabilities
+- **Persistent Session Memory**: Every conversation, code exploration, and development decision is preserved
+- **Timeline Navigation**: Visualize and revisit your development history with ease
+- **Agentic Memory Management**: Branch, edit, and prune your AI's understanding of your project
+- **Conversation-First Development**: Natural dialogue with Mama Bear, your Gemini-powered lead developer
+
+### AI Integration
+- **Gemini Pro Integration**: Leverages Google's advanced AI models
+- **Vertex AI Support**: Enterprise-grade AI capabilities for larger projects
+- **MCP (Model Context Protocol) Toolkit**: Extensible system for AI tools and capabilities
+
+### Developer Experience
+- **Docker MCP Integration**: Containerized services for extended AI capabilities
+- **Web & Local Code Execution**: Run and test code directly in the environment
+- **File Operations**: Create, edit, and manage project files seamlessly
+- **Integrated Terminal**: Full terminal access with WebSocket connectivity
+
+### User Interface
+- **Beautiful, Calm Design**: Dark mode interface designed for long coding sessions
+- **Keyboard Navigation**: Efficient shortcuts for all operations
+- **ARIA Compliance**: Accessible design for all users
+- **Customizable Layout**: Adapt the workspace to your preferences
+
+## 🚀 Getting Started
+
+### System Requirements
+- **Operating System**: Windows 10/11, macOS, or Linux
+- **Python**: 3.8 or higher
+- **Browser**: Chrome, Firefox, Edge (latest versions)
+- **Optional**: Docker for container-based MCP services
+
+### Installation
+
+1. **Clone the repository**
+   ```bash
+   git clone https://github.com/yourusername/podplay-build.git
+   cd podplay-build
+   ```
+
+2. **Install dependencies**
+   ```bash
+   pip install -r requirements.txt
+   ```
+
+3. **Configure environment variables**
+   Create a `.env` file in the root directory with your API keys and configuration:
+   ```env
+   GEMINI_API_KEY=your-key-here
+   VERTEX_PROJECT_ID=your-project-id
+   SECRET_KEY=your-flask-secret
+   # See docs/configuration.md for complete list
+   ```
+
+4. **Start the application**
+   ```bash
+   python backend/app.py
+   ```
+
+5. **Access the interface**
+   Open your browser and navigate to: `http://localhost:5000`
+
+## 🔐 Security Considerations
+
+### API Keys & Credentials
+- **Never commit** your `.env` file or any files containing credentials
+- All sensitive values should be loaded via `os.environ.get('KEY')` or dotenv
+- No secrets are hardcoded in the codebase
+
+### Docker Security
+- Docker containers run with minimal privileges
+- MCP service containers are isolated from your system
+- Review Docker security best practices in `docs/security.md`
+
+### Code Execution Safety
+- Local code execution is sandboxed
+- File operations are limited to the project directory
+- Security measures are detailed in `docs/security.md`
 
 3. **Authentication**
    - If deploying publicly, add user authentication (Flask-Login, Auth0, etc.).

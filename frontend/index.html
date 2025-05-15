@@ -5,6 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Podplay Build - Mama Bear Sanctuary</title>
     <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/xterm@5.1.0/css/xterm.min.css">
     <style>
         :root {
             --primary: #8b5cf6;
@@ -49,10 +50,12 @@
         }
         
         .chat-message {
-            margin-bottom: 1rem;
-            padding: 0.75rem;
-            border-radius: 0.5rem;
+            margin-bottom: 1.5rem;
+            padding: 1rem;
+            border-radius: 0.75rem;
             max-width: 85%;
+            line-height: 1.6;
+            font-size: 1rem;
         }
         
         .user-message {
@@ -64,6 +67,56 @@
             margin-right: auto;
             background-color: var(--secondary);
             border: 1px solid rgba(255,255,255,0.1);
+            white-space: pre-wrap;
+            word-wrap: break-word;
+            overflow-wrap: break-word;
+        }
+        
+        .chat-bubble {
+            line-height: 1.6;
+            letter-spacing: 0.01em;
+        }
+        
+        .chat-content {
+            white-space: pre-wrap;
+            word-wrap: break-word;
+            overflow-wrap: break-word;
+            padding-top: 0.25rem;
+        }
+        
+        /* Styling for markdown-like elements */
+        .chat-content p {
+            margin-bottom: 1rem;
+        }
+        
+        .chat-content ul, .chat-content ol {
+            margin-left: 1.5rem;
+            margin-bottom: 1rem;
+        }
+        
+        .chat-content li {
+            margin-bottom: 0.5rem;
+        }
+        
+        .chat-content h1, .chat-content h2, .chat-content h3 {
+            margin-top: 1.5rem;
+            margin-bottom: 1rem;
+            font-weight: bold;
+        }
+        
+        .chat-content code {
+            background-color: rgba(0,0,0,0.2);
+            padding: 0.2rem 0.4rem;
+            border-radius: 0.25rem;
+            font-family: monospace;
+        }
+        
+        .chat-content pre {
+            background-color: rgba(0,0,0,0.2);
+            padding: 1rem;
+            border-radius: 0.5rem;
+            margin: 1rem 0;
+            overflow-x: auto;
         }
         
         .sender {
@@ -256,13 +309,16 @@
             <!-- Top Action Bar -->
             <div class="flex justify-between items-center p-4 border-b border-gray-700">
                 <div class="flex space-x-2">
-                    <button class="tool-btn active">Build</button>
-                    <button class="tool-btn">Plan</button>
-                    <button class="tool-btn">Chat</button>
-                    <button class="tool-btn">Research</button>
+                    <button class="tool-btn active" id="build-btn">Build</button>
+                    <button class="tool-btn" id="chat-btn" onclick="showMainChat()">Chat with Mama</button>
+                    <button class="tool-btn" id="plan-btn">Plan</button>
+                    <button class="tool-btn" id="research-btn">Research</button>
                 </div>
                 
                 <div class="flex space-x-2 items-center">
+                    <button onclick="toggleMCPDashboard()" class="bg-blue-600 hover:bg-blue-700 text-white font-bold py-1 px-3 rounded flex items-center">
+                        <span style="font-size: 1.2rem; margin-right: 5px;">🌐</span> MCP
+                    </button>
                     <select id="model-selector" class="bg-gray-800 text-white border border-gray-600 rounded px-3 py-1">
                         <option value="mama-bear-2.5">Mama Bear 2.5</option>
                         <option value="gemini-1.5-pro">Gemini 1.5 Pro</option>
@@ -289,14 +345,16 @@
                     
                     <!-- Chat Input -->
                     <div class="chat-controls">
-                        <div class="flex items-center">
-                            <input type="text" id="chat-input" placeholder="Ask Mama Bear..." class="flex-1 bg-gray-700 text-white rounded-l px-4 py-2 focus:outline-none focus:ring-2 focus:ring-purple-500">
-                            <button id="send-btn" class="bg-purple-600 hover:bg-purple-700 text-white rounded-r px-4 py-2">
-                                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 5l7 7m0 0l-7 7m7-7H3" />
-                                </svg>
-                            </button>
-                        </div>
+                        <form id="chat-form" class="w-full" onsubmit="return false;">
+                            <div class="flex items-start"> <!-- Changed from items-center to items-start for proper alignment with taller textarea -->
+                                <textarea id="chat-input" name="message" placeholder="Ask Mama Bear..." class="flex-1 bg-gray-700 text-white rounded-l px-4 py-2 focus:outline-none focus:ring-2 focus:ring-purple-500 min-h-[40px] max-h-[200px] overflow-y-auto resize-none" rows="1"></textarea>
+                                <button id="send-button" type="button" class="bg-purple-600 hover:bg-purple-700 text-white rounded-r px-4 py-2 h-[40px] flex items-center justify-center" onclick="sendMessageDirectly()">
+                                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 5l7 7m0 0l-7 7m7-7H3" />
+                                    </svg>
+                                </button>
+                            </div>
+                        </form>
                     </div>
                 </div>
                 
@@ -308,29 +366,37 @@
                         <div class="space-y-2">
                             <h3 class="font-medium text-white">MCP Tools</h3>
                             <ul class="ml-4 space-y-1 text-sm">
-                                <li class="flex items-center">
-                                    <svg class="w-4 h-4 mr-1 text-purple-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
-                                    </svg>
-                                    Web Search
+                                <li>
+                                    <button type="button" class="mcp-tool-btn flex items-center w-full text-left hover:bg-gray-600 p-1 rounded" data-tool="web-search" onclick="useMCPTool('web-search')">
+                                        <svg class="w-4 h-4 mr-1 text-purple-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                                        </svg>
+                                        Web Search
+                                    </button>
                                 </li>
-                                <li class="flex items-center">
-                                    <svg class="w-4 h-4 mr-1 text-purple-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 20l4-16m4 4l4 4-4 4M6 16l-4-4 4-4" />
-                                    </svg>
-                                    Code Search
+                                <li>
+                                    <button type="button" class="mcp-tool-btn flex items-center w-full text-left hover:bg-gray-600 p-1 rounded" data-tool="code-search" onclick="useMCPTool('code-search')">
+                                        <svg class="w-4 h-4 mr-1 text-purple-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 20l4-16m4 4l4 4-4 4M6 16l-4-4 4-4" />
+                                        </svg>
+                                        Code Search
+                                    </button>
                                 </li>
-                                <li class="flex items-center">
-                                    <svg class="w-4 h-4 mr-1 text-purple-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 8h14M5 8a2 2 0 110-4h14a2 2 0 110 4M5 8v10a2 2 0 002 2h10a2 2 0 002-2V8m-9 4h4" />
-                                    </svg>
-                                    Package Manager
+                                <li>
+                                    <button type="button" class="mcp-tool-btn flex items-center w-full text-left hover:bg-gray-600 p-1 rounded" data-tool="package-manager" onclick="useMCPTool('package-manager')">
+                                        <svg class="w-4 h-4 mr-1 text-purple-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 8h14M5 8a2 2 0 110-4h14a2 2 0 110 4M5 8v10a2 2 0 002 2h10a2 2 0 002-2V8m-9 4h4" />
+                                        </svg>
+                                        Package Manager
+                                    </button>
                                 </li>
-                                <li class="flex items-center">
-                                    <svg class="w-4 h-4 mr-1 text-purple-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.75 17L9 20l-1 1h8l-1-1-.75-3M3 13h18M5 17h14a2 2 0 002-2V5a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
-                                    </svg>
-                                    Filesystem Preview
+                                <li>
+                                    <button type="button" class="mcp-tool-btn flex items-center w-full text-left hover:bg-gray-600 p-1 rounded" data-tool="filesystem" onclick="useMCPTool('filesystem')">
+                                        <svg class="w-4 h-4 mr-1 text-purple-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.75 17L9 20l-1 1h8l-1-1-.75-3M3 13h18M5 17h14a2 2 0 002-2V5a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
+                                        </svg>
+                                        Filesystem Preview
+                                    </button>
                                 </li>
                             </ul>
                         </div>
@@ -369,18 +435,119 @@
     
     <!-- Scripts -->
     <script src="scripts/multimodal.js"></script>
+    <!-- Main scripts -->
+    <script src="js/terminal/terminal.js"></script>
+    <script src="js/utils.js"></script>
+    <script src="js/mcp/mcp-toolkit-manager.js" type="module"></script>
+    <script src="js/mcp/docker-mcp-manager.js" type="module"></script>
+    <script src="js/mcp/mcp-dashboard.js" type="module"></script>
+    <script src="js/main.js"></script>
+    <!-- Load Development Environment Scripts -->
+    <script src="/js/file-explorer/file-explorer.js"></script>
+    <script src="/js/code-editor/code-editor.js"></script>
+    <script src="/js/dev-environment.js"></script>
+    
+    <!-- Load Mama Bear Agent Bridge -->
+    <script src="/js/agent-bridge.js"></script>
+    
+    <!-- Load Auto-resize Textarea Script -->
+    <script src="/js/auto-resize-textarea.js"></script>
+    
+    <!-- Mama Bear Helper Functions -->
+    <script>
+        // Function to show main chat interface when user wants to chat with Mama Bear
+        function showMainChat() {
+            // Make the chat messages div visible
+            const chatMessagesContainer = document.getElementById('chat-messages');
+            const chatContainer = chatMessagesContainer.closest('.flex-1.flex.flex-col');
+            
+            // Show the chat container
+            if (chatContainer) {
+                chatContainer.style.display = 'flex';
+                
+                // Hide any possibly visible terminal or other panels
+                const terminalContainer = document.getElementById('terminal-container');
+                if (terminalContainer) {
+                    terminalContainer.style.display = 'none';
+                }
+                
+                // Highlight the chat button and unhighlight others
+                document.querySelectorAll('.tool-btn').forEach(btn => btn.classList.remove('active'));
+                document.getElementById('chat-btn').classList.add('active');
+                
+                // Focus the chat input for immediate typing
+                const chatInput = document.getElementById('chat-input');
+                if (chatInput) {
+                    chatInput.focus();
+                }
+                
+                // Scroll to bottom of chat
+                chatMessagesContainer.scrollTop = chatMessagesContainer.scrollHeight;
+            }
+        }
+        
+        // Toggle MCP Dashboard function for global access
+        function toggleMCPDashboard() {
+            // Check if mcpDashboard exists in global scope or on window
+            if (typeof mcpDashboard !== 'undefined') {
+                mcpDashboard.toggleDashboard();
+            } else if (window.mcpDashboard) {
+                window.mcpDashboard.toggleDashboard();
+            } else {
+                console.error('MCP Dashboard not found');
+                
+                // Try to load it manually
+                const dashboardScript = document.createElement('script');
+                dashboardScript.src = '/js/mcp/mcp-dashboard.js';
+                dashboardScript.type = 'module';
+                dashboardScript.onload = function() {
+                    if (window.mcpDashboard) {
+                        window.mcpDashboard.initialize();
+                        window.mcpDashboard.toggleDashboard();
+                    }
+                };
+                document.head.appendChild(dashboardScript);
+            }
+        }
+    </script>
+    
     <script>
         document.addEventListener('DOMContentLoaded', () => {
             // Initialize chat functionality
-            const chatInput = document.getElementById('chat-input');
+            let chatInput = document.getElementById('chat-input');
             const sendButton = document.getElementById('send-btn');
             const chatMessages = document.getElementById('chat-messages');
             const modelSelector = document.getElementById('model-selector');
             
-            // Send message function
-            async function sendMessage() {
-                const message = chatInput.value.trim();
-                if (!message) return;
+            // Function to ensure we always have the latest chat input element
+            function ensureChatInput() {
+                // Re-fetch the element to ensure we always have the latest reference
+                chatInput = document.getElementById('chat-input');
+                return chatInput;
+            }
+            
+            // Send button click handler
+            async function sendMessage(event) {
+                if (event) {
+                    event.preventDefault(); // Prevent form submission if called from a form event
+                }
+                
+                // Always get the latest chat input element
+                const input = ensureChatInput();
+                if (!input) {
+                    console.error('Chat input element not found');
+                    return;
+                }
+                
+                // Safely access input value with fallback to empty string
+                const message = (input.value || '').trim();
+                if (!message) {
+                    console.log('Empty message, not sending');
+                    return;
+                }
+                
+                // Debug log
+                console.log('Sending message:', message);
                 
                 // Add user message to chat
                 const userMessageDiv = document.createElement('div');
@@ -392,8 +559,16 @@
                 `;
                 chatMessages.appendChild(userMessageDiv);
                 
-                // Clear input
-                chatInput.value = '';
+                // Clear input and manually trigger resize event for the auto-expanding textarea
+                // Reuse the input variable instead of redeclaring it
+                if (input) {
+                    input.value = '';
+                    const event = new Event('input', {
+                        bubbles: true,
+                        cancelable: true,
+                    });
+                    input.dispatchEvent(event);
+                }
                 
                 // Scroll to bottom
                 chatMessages.scrollTop = chatMessages.scrollHeight;
@@ -459,15 +634,159 @@
                 }
             }
             
-            // Event listeners
-            sendButton.addEventListener('click', sendMessage);
-            
-            chatInput.addEventListener('keydown', (e) => {
-                if (e.key === 'Enter' && !e.shiftKey) {
-                    e.preventDefault();
-                    sendMessage();
+            // Initialize event listeners once DOM has loaded
+            document.addEventListener('DOMContentLoaded', function() {
+                console.log('DOM fully loaded - setting up event listeners');
+                
+                // Properly identify the button with correct ID
+                const sendButton = document.getElementById('send-button');
+                if (sendButton) {
+                    console.log('Found send-button, attaching event listener');
+                    sendButton.onclick = function(e) {
+                        console.log('Send button clicked via onclick');
+                        if (e) e.preventDefault();
+                        sendMessageDirectly();
+                        return false;
+                    };
+                } else {
+                    console.error('Could not find send-button');
+                }
+                
+                // Make sure the form submission is properly handled
+                const chatForm = document.getElementById('chat-form');
+                if (chatForm) {
+                    console.log('Found chat-form, attaching submit event listener');
+                    chatForm.onsubmit = function(e) {
+                        console.log('Form submit event captured');
+                        if (e) e.preventDefault();
+                        sendMessageDirectly();
+                        return false;
+                    };
+                } else {
+                    console.error('Could not find chat-form');
                 }
             });
+            
+            // Set up keydown listener that will work even if the element is replaced
+            document.addEventListener('keydown', (e) => {
+                const input = ensureChatInput();
+                if (input && e.target === input && e.key === 'Enter' && !e.shiftKey) {
+                    console.log('Enter key pressed in chat input');
+                    e.preventDefault();
+                    // Use our direct function to avoid event handling issues
+                    sendMessageDirectly();
+                    return false;
+                }
+            });
+            
+            // Direct function to handle send button click
+            function sendMessageDirectly() {
+                console.log('Send button clicked directly');
+                sendMessage({ preventDefault: function() {} });
+            }
+            
+            // Initialize MCP tool buttons
+            document.querySelectorAll('.mcp-tool').forEach(button => {
+                button.addEventListener('click', function(e) {
+                    e.preventDefault();
+                    console.log('MCP tool button clicked');
+                    const tool = this.getAttribute('data-tool');
+                    const message = `Please use the ${tool} MCP tool to help me with my current task.`;
+                    const input = ensureChatInput();
+                    if (input) {
+                        input.value = message;
+                        console.log('MCP tool clicked, setting message:', message);
+                        // Use the direct function to avoid event object issues
+                        sendMessageDirectly();
+                    } else {
+                        console.error('Chat input element not found when clicking MCP tool');
+                    }
+                });
+            });
+            
+            // Function to use MCP tools from sidebar buttons
+            function useMCPTool(toolName) {
+                console.log(`MCP tool button clicked: ${toolName}`);
+                const input = ensureChatInput();
+                if (input) {
+                    let message = '';
+                    
+                    // Different message formats for different tools
+                    switch(toolName) {
+                        case 'web-search':
+                            message = 'Please search the web for information about ';
+                            break;
+                        case 'code-search':
+                            message = 'Please help me search through the codebase for ';
+                            break;
+                        case 'package-manager':
+                            message = 'Please help me manage packages for my project. I need to ';
+                            break;
+                        case 'filesystem':
+                            message = 'Please help me with file operations. I need to ';
+                            break;
+                        default:
+                            message = `Please use the ${toolName} MCP tool to help me with my current task.`;
+                    }
+                    
+                    input.value = message;
+                    input.focus();
+                    // Make sure the cursor is at the end of the pre-filled text
+                    input.selectionStart = input.selectionEnd = input.value.length;
+                    
+                    // Don't send automatically, let the user complete their thought
+                    console.log('Set chat input to MCP tool prompt, waiting for user to complete and send');
+                } else {
+                    console.error('Could not find chat input element for MCP tool button click');
+                }
+            }
+            
+            // Add listener to debug chat input issues
+            window.addEventListener('DOMContentLoaded', function() {
+                console.log('DOM fully loaded, checking chat elements...');
+                const chatInput = ensureChatInput();
+                console.log('Chat input element found:', !!chatInput);
+                const sendBtn = document.getElementById('send-button');
+                console.log('Send button found:', !!sendBtn);
+                if (sendBtn) {
+                    console.log('Adding additional click listener to send button');
+                    sendBtn.onclick = function(e) {
+                        console.log('Send button clicked directly');
+                        e.preventDefault();
+                        sendMessage(e);
+                        return false;
+                    };
+                }
+                
+                // Initialize MCP tool buttons
+                document.querySelectorAll('.mcp-tool-btn').forEach(button => {
+                    console.log('Found MCP tool button:', button.getAttribute('data-tool'));
+                    button.addEventListener('click', function(e) {
+                        e.preventDefault();
+                        const tool = this.getAttribute('data-tool');
+                        useMCPTool(tool);
+                        return false;
+                    });
+                });
+            });
+            
+            // Preview toggle button
+            const previewToggleBtn = document.getElementById('preview-toggle-btn');
+            if (previewToggleBtn) {
+                previewToggleBtn.addEventListener('click', function() {
+                    const previewContainer = document.getElementById('podplay-preview-container');
+                    if (previewContainer) {
+                        previewContainer.style.display = previewContainer.style.display === 'none' ? 'block' : 'none';
+                    } else {
+                        // If preview panel doesn't exist, send message to create demo content
+                        const input = ensureChatInput();
+                        if (input) {
+                            input.value = "Please create a simple HTML page that I can preview.";
+                            sendMessage();
+                        }
+                    }
+                });
+            }
         });
     </script>
 </body>
