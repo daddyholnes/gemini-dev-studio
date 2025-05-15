@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Podplay Build - Code Build Sanctuary</title>
+    <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+    <header>
+        <h1>Podplay Build <span style="font-size:0.7em; color:#888;">Mama Bear Sanctuary</span></h1>
+    </header>
+    <main>
+        <section id="briefing-section">
+            <div id="briefing-box" style="display:none; background:#f9f9f9; border:1px solid #ccc; padding:1em; margin-bottom:1em;"></div>
+        </section>
+        <section id="code-build-section">
+            <h2>Code Build</h2>
+            <!-- Core code/chat UI goes here -->
+            <button id="open-marketplace-panel" style="margin-bottom:1em;">Open Marketplace Panel</button>
+            <div id="marketplace-panel" style="display:none; background:#eef; border:1px solid #99c; padding:1em;">
+                <input id="marketplace-search" type="text" placeholder="Search tools/models...">
+                <button id="marketplace-search-btn">Search</button>
+                <ul id="marketplace-tools-list"></ul>
+            </div>
+        </section>
+    </main>
+    <script src="js/briefing.js"></script>
+    <script src="js/marketplace_panel.js"></script>
+</body>
+</html>

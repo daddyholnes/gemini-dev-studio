@@ -1,0 +1,41 @@
+# Environment variables
+.env
+
+# Firebase credentials
+*-firebase-adminsdk-*.json
+
+# Sensitive conversation histories
+*-Handle-With-Care.txt
+Mumma-Bear-Handle-With-Care.txt
+
+# Python cache files
+__pycache__/
+*.py[cod]
+*$py.class
+
+# Distribution / packaging
+dist/
+build/
+*.egg-info/
+
+# Virtual environments
+venv/
+env/
+ENV/
+
+# IDE files
+.idea/
+.vscode/
+*.swp
+*.swo
+
+# OS specific files
+.DS_Store
+Thumbs.db
+
+# Log files
+*.log
+
+# Temporary files
+tmp/
+temp/
