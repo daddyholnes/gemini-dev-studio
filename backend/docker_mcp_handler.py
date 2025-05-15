@@ -296,5 +296,5 @@ class DockerMCPHandler:
             logger.error(f"Error querying Docker MCP server: {e}")
             return {'error': str(e)}
 
-# Initialize handler with empty config (will be set later)
-docker_mcp_handler = DockerMCPHandler()
+# Don't create an instance at the module level anymore
+# Instead, app.py will create its own instance using the DockerMCPHandler class
