@@ -1066,6 +1066,14 @@ def mcp_toolkit_call_tool(server_name, tool_name):
 
 # Import Docker MCP handler
 try:
+    # Use a direct import with the full path
+    import os
+    import sys
+    current_dir = os.path.dirname(os.path.abspath(__file__))
+    if current_dir not in sys.path:
+        sys.path.append(current_dir)
+    
+    # Now import should work
     from docker_mcp_handler import DockerMCPHandler
     
     # Create an instance of the DockerMCPHandler class with the loaded MCP config
@@ -1152,23 +1160,12 @@ def docker_mcp_start(server_name):
     
     try:
         logger.info(f"Attempting to start Docker MCP server: {server_name}")
-        success = docker_mcp_handler.start_container(server_name)
+        result = docker_mcp_handler.start_container(server_name)
         
-        if success:
-            return jsonify({
-                'success': True,
-                'docker_available': True,
-                'message': f'Docker MCP server {server_name} started successfully'
-            })
-        else:
-            # Get specific error information from the handler
-            logger.error(f"Failed to start Docker MCP server {server_name} but no exception was thrown")
-            return jsonify({
-                'success': False,
-                'docker_available': True,
-                'error': f'Failed to start Docker MCP server {server_name}',
-                'message': 'Docker command failed. Check server logs for details.'
-            }), 200  # Return 200 to prevent client errors
+        # The result is now a dictionary with detailed status information
+        # Just pass it through to the client
+        logger.info(f"Docker MCP start result: {result}")
+        return jsonify(result), 200  # Always return 200 to prevent client errors
     except Exception as e:
         logger.error(f"Exception while starting Docker MCP server {server_name}: {e}")
         return jsonify({
@@ -1201,23 +1198,12 @@ def docker_mcp_stop(server_name):
     
     try:
         logger.info(f"Attempting to stop Docker MCP server: {server_name}")
-        success = docker_mcp_handler.stop_container(server_name)
+        result = docker_mcp_handler.stop_container(server_name)
         
-        if success:
-            return jsonify({
-                'success': True,
-                'docker_available': True,
-                'message': f'Docker MCP server {server_name} stopped successfully'
-            })
-        else:
-            # Get specific error information from the handler
-            logger.error(f"Failed to stop Docker MCP server {server_name} but no exception was thrown")
-            return jsonify({
-                'success': False,
-                'docker_available': True,
-                'error': f'Failed to stop Docker MCP server {server_name}',
-                'message': 'Docker command failed. Check server logs for details.'
-            }), 200  # Return 200 to prevent client errors
+        # The result is now a dictionary with detailed status information
+        # Just pass it through to the client
+        logger.info(f"Docker MCP stop result: {result}")
+        return jsonify(result), 200  # Always return 200 to prevent client errors
     except Exception as e:
         logger.error(f"Exception while stopping Docker MCP server {server_name}: {e}")
         return jsonify({

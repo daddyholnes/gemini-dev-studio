@@ -140,20 +140,35 @@ class DockerMCPHandler:
             server_name (str): Name of the server
             
         Returns:
-            bool: True if successful, False otherwise
+            dict: Result dictionary with status information
         """
         # Check if Docker is available
         if not self.docker_available:
             logger.error("Docker is not available on this system")
-            return False
+            return {
+                'success': False, 
+                'docker_available': False,
+                'error': 'Docker is not available on this system',
+                'message': 'Please install Docker to use this feature'
+            }
             
         if server_name not in self.docker_servers:
             logger.error(f"Docker MCP server {server_name} not found in configuration")
-            return False
+            return {
+                'success': False, 
+                'docker_available': True,
+                'error': f'Docker MCP server {server_name} not found in configuration',
+                'message': 'Server not configured properly'
+            }
             
         if self.is_container_running(server_name):
             logger.info(f"Docker container {server_name} is already running")
-            return True
+            self.active_containers.add(server_name)
+            return {
+                'success': True, 
+                'docker_available': True,
+                'message': f'Docker container {server_name} is already running'
+            }
             
         try:
             config = self.docker_servers[server_name]
@@ -162,16 +177,37 @@ class DockerMCPHandler:
             # Check if container exists but is stopped
             try:
                 # First try to remove any existing container with this name
-                subprocess.run(["docker", "rm", container_name], 
-                              capture_output=True, text=True, check=False)
-            except Exception:
-                # Ignore errors if container doesn't exist
-                pass
+                rm_result = subprocess.run(["docker", "rm", container_name], 
+                                          capture_output=True, text=True, check=False)
+                if rm_result.returncode == 0:
+                    logger.info(f"Removed existing container: {container_name}")
+            except Exception as e:
+                # Log but continue if container doesn't exist
+                logger.warning(f"Error removing container (likely doesn't exist): {e}")
                 
             # Ensure the image exists
             if not config.get('image'):
                 logger.error(f"Docker image not specified for {server_name}")
-                return False
+                return {
+                    'success': False, 
+                    'docker_available': True,
+                    'error': f'Docker image not specified for {server_name}',
+                    'message': 'Docker image configuration is missing'
+                }
+            
+            # First pull the image to make sure it's available
+            logger.info(f"Pulling Docker image: {config['image']}")
+            pull_cmd = ["docker", "pull", config['image']]
+            pull_result = subprocess.run(pull_cmd, capture_output=True, text=True, check=False)
+            
+            if pull_result.returncode != 0:
+                logger.error(f"Error pulling Docker image: {pull_result.stderr}")
+                return {
+                    'success': False, 
+                    'docker_available': True,
+                    'error': f'Failed to pull Docker image {config["image"]}',
+                    'message': f'Docker image error: {pull_result.stderr.strip()}'
+                }
             
             # Build Docker command
             cmd = [
@@ -180,6 +216,10 @@ class DockerMCPHandler:
                 "--name", container_name,
                 "-p", f"{config.get('port', 8811)}:{config.get('port', 8811)}"
             ]
+            
+            # Add more container options for better reliability
+            cmd.extend(["--restart", "unless-stopped"])  # Auto-restart
+            cmd.extend(["--memory", "512m"])  # Memory limit
             
             # Add API key if present
             if config.get('api_key'):
@@ -195,13 +235,28 @@ class DockerMCPHandler:
             if result.returncode == 0:
                 self.active_containers.add(server_name)
                 logger.info(f"Docker container {server_name} started successfully")
-                return True
+                return {
+                    'success': True, 
+                    'docker_available': True,
+                    'message': f'Docker container {server_name} started successfully'
+                }
             else:
-                logger.error(f"Error starting Docker container: {result.stderr}")
-                return False
+                error_msg = result.stderr.strip()
+                logger.error(f"Error starting Docker container: {error_msg}")
+                return {
+                    'success': False, 
+                    'docker_available': True,
+                    'error': f'Failed to start Docker MCP server {server_name}',
+                    'message': 'Docker command failed. Check server logs for details.'
+                }
         except Exception as e:
             logger.error(f"Exception starting Docker container: {e}")
-            return False
+            return {
+                'success': False, 
+                'docker_available': True,
+                'error': f'Exception starting Docker container: {e}',
+                'message': 'Unexpected error. Please check logs.'
+            }
     
     def stop_container(self, server_name):
         """Stop a Docker container
@@ -210,20 +265,35 @@ class DockerMCPHandler:
             server_name (str): Name of the server
             
         Returns:
-            bool: True if successful, False otherwise
+            dict: Result dictionary with status information
         """
         # Check if Docker is available
         if not self.docker_available:
             logger.error("Docker is not available on this system")
-            return False
+            return {
+                'success': False, 
+                'docker_available': False,
+                'error': 'Docker is not available on this system',
+                'message': 'Please install Docker to use this feature'
+            }
             
         if server_name not in self.docker_servers:
             logger.error(f"Docker MCP server {server_name} not found in configuration")
-            return False
+            return {
+                'success': False, 
+                'docker_available': True,
+                'error': f'Docker MCP server {server_name} not found in configuration',
+                'message': 'Server not configured properly'
+            }
             
         if not self.is_container_running(server_name):
             logger.info(f"Docker container {server_name} is not running")
-            return True
+            self.active_containers.discard(server_name)
+            return {
+                'success': True, 
+                'docker_available': True,
+                'message': f'Docker container {server_name} is already stopped'
+            }
             
         try:
             container_name = f"podplay-mcp-{server_name}"
@@ -233,6 +303,16 @@ class DockerMCPHandler:
             stop_cmd = ["docker", "stop", container_name]
             stop_result = subprocess.run(stop_cmd, capture_output=True, text=True, check=False)
             
+            # Check if stop was successful
+            if stop_result.returncode != 0 and 'No such container' not in stop_result.stderr:
+                logger.error(f"Error stopping Docker container: {stop_result.stderr}")
+                return {
+                    'success': False, 
+                    'docker_available': True,
+                    'error': f'Failed to stop Docker container {server_name}',
+                    'message': f'Docker stop error: {stop_result.stderr.strip()}'
+                }
+                
             # Remove container
             logger.info(f"Removing Docker container: {container_name}")
             rm_cmd = ["docker", "rm", container_name]
@@ -242,13 +322,27 @@ class DockerMCPHandler:
             if stop_result.returncode == 0 or 'No such container' in stop_result.stderr:
                 self.active_containers.discard(server_name)
                 logger.info(f"Docker container {server_name} stopped successfully")
-                return True
+                return {
+                    'success': True, 
+                    'docker_available': True,
+                    'message': f'Docker container {server_name} stopped successfully'
+                }
             else:
-                logger.error(f"Error stopping Docker container: {stop_result.stderr}")
-                return False
+                logger.error(f"Error with Docker container operation: {stop_result.stderr}")
+                return {
+                    'success': False, 
+                    'docker_available': True,
+                    'error': f'Error with Docker container operation',
+                    'message': f'Docker error: {stop_result.stderr.strip()}'
+                }
         except Exception as e:
             logger.error(f"Exception stopping Docker container: {e}")
-            return False
+            return {
+                'success': False, 
+                'docker_available': True,
+                'error': f'Exception stopping Docker container: {e}',
+                'message': 'Unexpected error. Please check logs.'
+            }
     
     def send_query(self, server_name, query, params=None):
         """Send a query to a Docker MCP server
