@@ -1,54 +1,4 @@
-/**
- * Docker MCP Client
- * 
- * Provides a client-side interface for interacting with the Docker MCP service.
- * This allows AI models to manage Docker containers, images, and other resources.
- */
 
-class DockerMCPClient {
-  constructor(baseUrl = '/api/docker') {
-    this.baseUrl = baseUrl.endsWith('/') ? baseUrl.slice(0, -1) : baseUrl;
-    this.connected = false;
-  }
-
-  /**
-   * Check if the Docker service is available
-   * @returns {Promise<boolean>} True if the service is available
-   */
-  /**
-   * Check if the Docker service is available
-   * @returns {Promise<boolean>} True if the service is available
-   */
-  async checkStatus() {
-    try {
-      const response = await fetch(`${this.baseUrl}/status`);
-      if (!response.ok) {
-        throw new Error(`HTTP error! status: ${response.status}`);
-      }
-      const data = await response.json();
-      this.connected = data.status === 'available';
-      return this.connected;
-    } catch (error) {
-      console.error('Error checking Docker MCP service status:', error);
-      this.connected = false;
-      return false;
-    }
-  }
-
-  /**
-   * Search for Docker images
-   * @param {string} term Search term
-   * @param {number} limit Maximum number of results
-   * @returns {Promise<Array>} List of matching images
-   */
-  async searchImages(term, limit = 10) {
-    try {
-      const response = await fetch(`${this.baseUrl}/images/search?term=${encodeURIComponent(term)}&limit=${limit}`);
-      if (!response.ok) {
-        throw new Error(`HTTP error! status: ${response.status}`);
-      }
-      const data = await response.json();
-      return data.results || [];
     } catch (error) {
       console.error('Error searching Docker images:', error);
       throw error;
@@ -200,6 +150,7 @@ class DockerMCPClient {
     }
   }
 
+
   /**
    * Get container logs
    * @param {string} containerId Container ID
@@ -220,6 +171,48 @@ class DockerMCPClient {
       return await response.text();
     } catch (error) {
       console.error('Error getting container logs:', error);
+      throw error;
+    }
+  }
+  
+  /**
+   * Get container stats
+   * @param {string} containerId 
+   * @returns {Promise<Object>} Container stats
+   */
+  async getContainerStats(containerId) {
+    try {
+      const response = await fetch(`${this.baseUrl}/containers/${containerId}/stats`);
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+      return await response.json();
+    } catch (error) {
+      console.error('Error getting container stats:', error);
+      throw error;
+    }
+  }
+
+  /**
+   * Remove a container
+   * @param {string} containerId 
+   * @param {boolean} force 
+   * @returns {Promise<Object>} Result
+   */
+  async removeContainer(containerId, force = false) {
+    try {
+      const response = await fetch(`${this.baseUrl}/containers/${containerId}?force=${force}`, {
+        method: 'DELETE'
+      });
+      
+      if (!response.ok) {
+        const error = await response.json();
+        throw new Error(error.detail || 'Failed to remove container');
+      }
+      
+      return await response.json();
+    } catch (error) {
+      console.error('Error removing container:', error);
       throw error;
     }
   }

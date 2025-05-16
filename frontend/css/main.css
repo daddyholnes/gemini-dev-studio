@@ -1,0 +1,141 @@
+/* Main Styles */
+:root {
+    --primary: #8b5cf6;
+    --primary-dark: #7c3aed;
+    --secondary: #1e293b;
+    --accent: #4f46e5;
+    --text: #e2e8f0;
+    --background: #0f172a;
+    --sidebar: #1e293b;
+}
+
+/* Scrollbar Styling */
+::-webkit-scrollbar {
+    width: 6px;
+    height: 6px;
+}
+
+::-webkit-scrollbar-track {
+    background: rgba(255, 255, 255, 0.05);
+    border-radius: 3px;
+}
+
+::-webkit-scrollbar-thumb {
+    background: rgba(255, 255, 255, 0.2);
+    border-radius: 3px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+    background: rgba(255, 255, 255, 0.3);
+}
+
+/* Sidebar Buttons */
+.sidebar-btn {
+    width: 2.5rem;
+    height: 2.5rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #9ca3af;
+    border-radius: 0.5rem;
+    transition: all 0.2s;
+}
+
+.sidebar-btn:hover {
+    color: white;
+    background-color: #374151;
+}
+
+.sidebar-btn.active {
+    color: white;
+    background-color: #4B5563;
+}
+
+/* Chat Messages */
+.chat-message {
+    max-width: 42rem;
+    border-radius: 0.5rem;
+    padding: 1rem;
+    margin-bottom: 1rem;
+}
+
+.chat-message.user {
+    margin-left: auto;
+    background-color: #8b5cf6;
+    color: white;
+}
+
+.chat-message.assistant {
+    margin-right: auto;
+    background-color: #1F2937;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    white-space: pre-wrap;
+    word-wrap: break-word;
+}
+
+/* Docker Container Cards */
+.container-card {
+    background-color: #374151;
+    border-radius: 0.5rem;
+    padding: 0.75rem;
+    font-size: 0.875rem;
+    margin-bottom: 0.75rem;
+}
+
+.container-card.running {
+    border-left: 4px solid #10B981;
+}
+
+.container-card.stopped {
+    border-left: 4px solid #EF4444;
+}
+
+/* Terminal */
+.terminal {
+    background-color: black;
+    color: #10B981;
+    font-family: monospace;
+    font-size: 0.875rem;
+    padding: 0.5rem;
+    border-radius: 0.25rem;
+    height: 100%;
+}
+
+/* Build Mode */
+.build-mode {
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+}
+
+.build-mode-toolbar {
+    background-color: #1F2937;
+    padding: 0.5rem;
+    border-bottom: 1px solid #374151;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.build-mode-content {
+    flex: 1;
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 1rem;
+    padding: 1rem;
+    overflow: auto;
+}
+
+/* Animations */
+@keyframes pulse {
+    0%, 100% {
+        opacity: 1;
+    }
+    50% {
+        opacity: 0.5;
+    }
+}
+
+.animate-pulse {
+    animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+}
