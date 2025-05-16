@@ -906,6 +906,56 @@ def terminal_status():
 # Create a route to check the environment status
 @app.route('/api/environment/status', methods=['GET'])
 def environment_status():
+    import subprocess
+    import shutil
+    
+    # Check Docker status
+    docker_status = 'unknown'
+    docker_version = None
+    docker_compose_available = False
+    mcp_server_status = {}
+    
+    # Check if Docker is installed and running
+    if shutil.which('docker'):
+        try:
+            # Get Docker version
+            result = subprocess.run(['docker', 'version', '--format', '{{.Server.Version}}'], 
+                                   capture_output=True, text=True, timeout=5)
+            if result.returncode == 0:
+                docker_version = result.stdout.strip()
+                docker_status = 'running'
+                
+                # Check if containers are running
+                result = subprocess.run(['docker', 'ps', '--format', '{{.Names}}'], 
+                                        capture_output=True, text=True, timeout=5)
+                if result.returncode == 0:
+                    container_names = result.stdout.strip().split('\n')
+                    podplay_containers = [c for c in container_names if c and 'podplay' in c.lower()]
+                    
+                    if podplay_containers:
+                        docker_status = 'running'  # Podplay containers are running
+                    else:
+                        docker_status = 'stopped'  # Docker is running but no Podplay containers
+        except (subprocess.SubprocessError, FileNotFoundError) as e:
+            logger.warning(f"Docker check error: {e}")
+            docker_status = 'error'
+    else:
+        docker_status = 'not_installed'
+    
+    # Check Docker Compose availability
+    if shutil.which('docker-compose') or shutil.which('docker') and docker_status == 'running':
+        docker_compose_available = True
+    
+    # Check MCP server status if Docker is running
+    if docker_status == 'running' and 'docker_mcp_status' in globals():
+        try:
+            mcp_status = docker_mcp_status()
+            if isinstance(mcp_status, dict) and 'servers' in mcp_status:
+                mcp_server_status = mcp_status['servers']
+        except Exception as e:
+            logger.warning(f"MCP status check error: {e}")
+    
+    # Build complete status response
     status = {
         'terminal_available': terminal_available,
         'agent_bridge_available': agent_bridge_available if 'agent_bridge_available' in globals() else False,
@@ -914,8 +964,13 @@ def environment_status():
         'code_execution_available': code_execution_available or wasm_available,
         'wasm_available': wasm_available if 'wasm_available' in globals() else False,
         'firebase_available': firebase_available,
-        'local_storage_available': local_storage_available if 'local_storage_available' in globals() else False
+        'local_storage_available': local_storage_available if 'local_storage_available' in globals() else False,
+        'docker_status': docker_status,
+        'docker_version': docker_version,
+        'docker_compose_available': docker_compose_available,
+        'mcp_servers': mcp_server_status
     }
+    
     return jsonify(status)
 
 # Load MCP configuration

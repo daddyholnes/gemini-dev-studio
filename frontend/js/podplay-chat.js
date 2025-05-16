@@ -92,11 +92,46 @@ document.addEventListener('DOMContentLoaded', function() {
         
         // Prepare request data
         const formData = new FormData();
-        formData.append('model_name', modelSelector ? modelSelector.value : 'mama-bear-2.5');
+        
+        // Use the model orchestrator to select the best model
+        let selectedModel = 'mama-bear-2.5';
+        let taskContext = null;
+        
+        // Check if we have the model orchestrator
+        if (window.modelOrchestrator) {
+            // Determine if message includes images
+            const includesImage = Array.from(chatMessages.querySelectorAll('.chat-message.user-message:last-child img')).length > 0;
+            
+            // Route the request through the orchestrator
+            const routingInfo = window.modelOrchestrator.routeRequest({
+                message,
+                mode: 'Build', // Default to Build mode
+                includesImage
+            });
+            
+            // Get the selected model
+            selectedModel = routingInfo.model;
+            taskContext = routingInfo.context;
+            
+            console.log(`🚀 Chat: Using model ${selectedModel} for this request`);
+        } else if (window.modelSelector) {
+            // Fall back to model selector if orchestrator not available
+            selectedModel = window.modelSelector.getCurrentModel ? 
+                window.modelSelector.getCurrentModel().id : 
+                window.modelSelector.value || 'mama-bear-2.5';
+        }
+        
+        // Append the selected model to the form data
+        formData.append('model_name', selectedModel);
         formData.append('message', message);
         formData.append('mode', 'Build');
         formData.append('project_id', 'podplay-sanctuary');
         
+        // Add context if available
+        if (taskContext) {
+            formData.append('context', JSON.stringify(taskContext));
+        }
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                    
         // Send to backend with timeout protection
         const controller = new AbortController();
         const timeoutId = setTimeout(() => controller.abort(), 30000); // 30s timeout

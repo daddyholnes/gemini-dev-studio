@@ -1,0 +1,277 @@
+/**
+ * Podplay Build Sanctuary - Agent Manager Styles
+ * 
+ * Styles for the specialized agent system:
+ * - Agent switcher interface
+ * - Agent-themed message styling
+ * - Visual indicators for different agents
+ * 
+ * Created by Mama Bear 🐻💜
+ */
+
+/* Agent color themes */
+:root {
+  /* Main agent colors */
+  --mama-bear-primary: #8b5cf6;
+  --mama-bear-secondary: #7c3aed;
+  --research-hound-primary: #3b82f6;
+  --research-hound-secondary: #1d4ed8;
+  --code-weasel-primary: #10b981;
+  --code-weasel-secondary: #059669;
+  
+  /* Gradients */
+  --mama-bear-gradient: linear-gradient(135deg, var(--mama-bear-primary), var(--mama-bear-secondary));
+  --research-hound-gradient: linear-gradient(135deg, var(--research-hound-primary), var(--research-hound-secondary));
+  --code-weasel-gradient: linear-gradient(135deg, var(--code-weasel-primary), var(--code-weasel-secondary));
+  
+  /* Message backgrounds */
+  --mama-bear-message-bg: rgba(139, 92, 246, 0.1);
+  --research-hound-message-bg: rgba(59, 130, 246, 0.1);
+  --code-weasel-message-bg: rgba(16, 185, 129, 0.1);
+  
+  /* Neon effects */
+  --mama-bear-glow: 0 0 5px rgba(139, 92, 246, 0.5), 0 0 20px rgba(139, 92, 246, 0.3);
+  --research-hound-glow: 0 0 5px rgba(59, 130, 246, 0.5), 0 0 20px rgba(59, 130, 246, 0.3);
+  --code-weasel-glow: 0 0 5px rgba(16, 185, 129, 0.5), 0 0 20px rgba(16, 185, 129, 0.3);
+}
+
+/* Agent switcher container */
+.agent-switcher {
+  display: flex;
+  background: var(--surface-2, #1e1e2e);
+  border-radius: 12px;
+  padding: 8px;
+  margin-bottom: 16px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+  transition: all 0.3s ease;
+}
+
+/* Individual agent options */
+.agent-option {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 8px 12px;
+  border-radius: 8px;
+  cursor: pointer;
+  position: relative;
+  transition: all 0.2s ease;
+  opacity: 0.7;
+  margin: 0 4px;
+}
+
+.agent-option:hover {
+  opacity: 0.9;
+  transform: translateY(-2px);
+}
+
+.agent-option.active {
+  opacity: 1;
+  transform: translateY(-2px);
+}
+
+/* Active agent indicator */
+.agent-option.active::after {
+  content: '';
+  position: absolute;
+  bottom: -4px;
+  left: 20%;
+  width: 60%;
+  height: 3px;
+  border-radius: 2px;
+}
+
+.agent-option.mama-bear-option.active::after {
+  background: var(--mama-bear-gradient);
+  box-shadow: var(--mama-bear-glow);
+}
+
+.agent-option.research-hound-option.active::after {
+  background: var(--research-hound-gradient);
+  box-shadow: var(--research-hound-glow);
+}
+
+.agent-option.code-weasel-option.active::after {
+  background: var(--code-weasel-gradient);
+  box-shadow: var(--code-weasel-glow);
+}
+
+/* Agent option icon */
+.agent-option-icon {
+  font-size: 20px;
+  margin-bottom: 4px;
+  transition: transform 0.3s ease;
+}
+
+.agent-option:hover .agent-option-icon,
+.agent-option.active .agent-option-icon {
+  transform: scale(1.2);
+}
+
+/* Agent option name */
+.agent-option-name {
+  font-size: 12px;
+  font-weight: 500;
+  text-align: center;
+}
+
+/* Inactive agent styling */
+.agent-option.inactive {
+  opacity: 0.4;
+  cursor: not-allowed;
+  filter: grayscale(0.8);
+}
+
+.agent-option.inactive:hover {
+  transform: none;
+}
+
+.agent-option.inactive .agent-option-icon {
+  opacity: 0.5;
+}
+
+.agent-option.inactive::before {
+  content: '⚠️';
+  position: absolute;
+  top: 0;
+  right: 0;
+  font-size: 10px;
+  background: rgba(30, 30, 46, 0.8);
+  border-radius: 50%;
+  padding: 2px;
+}
+
+/* Agent avatar in messages */
+.agent-avatar {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-right: 10px;
+  font-size: 16px;
+  flex-shrink: 0;
+}
+
+.mama-bear-avatar {
+  background: var(--mama-bear-gradient);
+  box-shadow: var(--mama-bear-glow);
+}
+
+.research-hound-avatar {
+  background: var(--research-hound-gradient);
+  box-shadow: var(--research-hound-glow);
+}
+
+.code-weasel-avatar {
+  background: var(--code-weasel-gradient);
+  box-shadow: var(--code-weasel-glow);
+}
+
+/* Agent message styling */
+.chat-message.agent-message {
+  display: flex;
+  border-radius: 12px;
+  padding: 12px;
+  margin-bottom: 16px;
+  animation: fade-in 0.3s ease;
+}
+
+.chat-message.mama-bear-message {
+  background-color: var(--mama-bear-message-bg);
+  border-left: 3px solid var(--mama-bear-primary);
+}
+
+.chat-message.research-hound-message {
+  background-color: var(--research-hound-message-bg);
+  border-left: 3px solid var(--research-hound-primary);
+}
+
+.chat-message.code-weasel-message {
+  background-color: var(--code-weasel-message-bg);
+  border-left: 3px solid var(--code-weasel-primary);
+}
+
+/* Agent name in messages */
+.agent-name {
+  font-weight: 600;
+  margin-bottom: 4px;
+}
+
+.mama-bear-message .agent-name {
+  color: var(--mama-bear-primary);
+}
+
+.research-hound-message .agent-name {
+  color: var(--research-hound-primary);
+}
+
+.code-weasel-message .agent-name {
+  color: var(--code-weasel-primary);
+}
+
+/* Message animation */
+@keyframes fade-in {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Theme-based styling */
+body.theme-mama-bear {
+  --accent-color: var(--mama-bear-primary);
+  --accent-gradient: var(--mama-bear-gradient);
+  --accent-glow: var(--mama-bear-glow);
+}
+
+body.theme-research-hound {
+  --accent-color: var(--research-hound-primary);
+  --accent-gradient: var(--research-hound-gradient);
+  --accent-glow: var(--research-hound-glow);
+}
+
+body.theme-code-weasel {
+  --accent-color: var(--code-weasel-primary);
+  --accent-gradient: var(--code-weasel-gradient);
+  --accent-glow: var(--code-weasel-glow);
+}
+
+/* Apply theme to common elements */
+.theme-mama-bear .button-primary {
+  background: var(--mama-bear-gradient);
+}
+
+.theme-research-hound .button-primary {
+  background: var(--research-hound-gradient);
+}
+
+.theme-code-weasel .button-primary {
+  background: var(--code-weasel-gradient);
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+  .agent-switcher {
+    padding: 6px;
+  }
+  
+  .agent-option {
+    padding: 6px 8px;
+  }
+  
+  .agent-option-icon {
+    font-size: 16px;
+  }
+  
+  .agent-option-name {
+    font-size: 10px;
+  }
+}

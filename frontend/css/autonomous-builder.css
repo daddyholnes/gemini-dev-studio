@@ -1,0 +1,328 @@
+/**
+ * Podplay Build Sanctuary - Autonomous Builder Styles
+ * 
+ * Scout.new-inspired UI for autonomous project generation:
+ * - Clean, modern interface
+ * - Real-time progress visualization
+ * - Step-by-step build tracking
+ * 
+ * Created by Mama Bear 🐻💜
+ */
+
+.autonomous-builder-container {
+  display: flex;
+  flex-direction: column;
+  margin-bottom: 20px;
+  background: var(--surface-2);
+  border-radius: 10px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.12);
+  overflow: hidden;
+  border: 1px solid var(--border-color);
+  max-width: 100%;
+}
+
+/* ===== Prompt Section ===== */
+
+.autonomous-builder-prompt {
+  padding: 16px;
+  background: var(--surface-1);
+  border-bottom: 1px solid var(--border-color);
+}
+
+.autonomous-builder-header {
+  margin-bottom: 10px;
+}
+
+.autonomous-builder-header h2 {
+  margin: 0;
+  padding: 0;
+  font-size: 1.2rem;
+  font-weight: 600;
+  color: var(--text-color);
+  display: flex;
+  align-items: center;
+}
+
+.autonomous-builder-header h2::before {
+  content: '🚀';
+  margin-right: 8px;
+  font-size: 1.4rem;
+}
+
+.autonomous-builder-header p {
+  margin: 5px 0 0;
+  font-size: 0.9rem;
+  color: var(--text-color-secondary);
+}
+
+.autonomous-builder-input-group {
+  display: flex;
+  align-items: flex-start;
+}
+
+#autonomous-builder-prompt {
+  flex: 1;
+  min-height: 80px;
+  padding: 12px;
+  border-radius: 8px;
+  border: 1px solid var(--border-color);
+  background: var(--surface-0);
+  color: var(--text-color);
+  font-family: var(--font-family);
+  font-size: 0.95rem;
+  resize: vertical;
+  line-height: 1.5;
+  transition: border-color 0.2s ease;
+}
+
+#autonomous-builder-prompt:focus {
+  outline: none;
+  border-color: var(--primary-color);
+  box-shadow: 0 0 0 2px rgba(var(--primary-color-rgb), 0.2);
+}
+
+#autonomous-builder-prompt::placeholder {
+  color: var(--text-color-tertiary);
+}
+
+.autonomous-builder-button {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-left: 8px;
+  padding: 0 20px;
+  height: 40px;
+  background: var(--primary-color);
+  color: white;
+  border: none;
+  border-radius: 8px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.2s ease, transform 0.1s ease;
+  white-space: nowrap;
+}
+
+.autonomous-builder-button:hover {
+  background: var(--primary-color-hover);
+  transform: translateY(-1px);
+}
+
+.autonomous-builder-button:active {
+  transform: translateY(1px);
+}
+
+.autonomous-builder-button-text {
+  margin-right: 8px;
+}
+
+.autonomous-builder-button-icon {
+  font-size: 1.1rem;
+}
+
+.autonomous-builder-button[disabled] {
+  background: #ccc;
+  cursor: not-allowed;
+  opacity: 0.7;
+}
+
+/* ===== Progress Section ===== */
+
+.autonomous-builder-progress {
+  padding: 16px;
+}
+
+.autonomous-builder-progress-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 12px;
+}
+
+.autonomous-builder-progress-header h3 {
+  margin: 0;
+  font-size: 1rem;
+  font-weight: 600;
+  color: var(--text-color);
+}
+
+.autonomous-builder-progress-stats {
+  display: flex;
+  align-items: center;
+  font-size: 0.85rem;
+  color: var(--text-color-secondary);
+}
+
+.autonomous-builder-progress-stats span {
+  margin: 0 2px;
+}
+
+.autonomous-builder-progress-bar-container {
+  height: 6px;
+  background: var(--surface-3);
+  border-radius: 3px;
+  margin-bottom: 16px;
+  overflow: hidden;
+}
+
+.autonomous-builder-progress-bar {
+  height: 100%;
+  background: var(--primary-color);
+  width: 0;
+  transition: width 0.3s ease-in-out;
+}
+
+/* ===== Step List ===== */
+
+.autonomous-builder-step-list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin-bottom: 16px;
+  max-height: 300px;
+  overflow-y: auto;
+}
+
+.autonomous-builder-step {
+  display: flex;
+  padding: 10px;
+  border-radius: 6px;
+  background: var(--surface-1);
+  border: 1px solid var(--border-color);
+  transition: all 0.2s ease;
+}
+
+.autonomous-builder-step.active {
+  border-color: var(--primary-color);
+  background: var(--primary-color-light);
+}
+
+.autonomous-builder-step.in_progress {
+  border-color: var(--primary-color);
+  animation: pulse 2s infinite;
+}
+
+.autonomous-builder-step.completed {
+  border-color: var(--success-color);
+  background: var(--success-color-light);
+}
+
+.autonomous-builder-step.failed {
+  border-color: var(--error-color);
+  background: var(--error-color-light);
+}
+
+.autonomous-builder-step-index {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: white;
+  background: var(--text-color-tertiary);
+  margin-right: 10px;
+}
+
+.autonomous-builder-step.active .autonomous-builder-step-index,
+.autonomous-builder-step.in_progress .autonomous-builder-step-index {
+  background: var(--primary-color);
+}
+
+.autonomous-builder-step.completed .autonomous-builder-step-index {
+  background: var(--success-color);
+}
+
+.autonomous-builder-step.failed .autonomous-builder-step-index {
+  background: var(--error-color);
+}
+
+.autonomous-builder-step-content {
+  flex: 1;
+}
+
+.autonomous-builder-step-title {
+  font-size: 0.9rem;
+  font-weight: 500;
+  color: var(--text-color);
+  margin-bottom: 4px;
+}
+
+.autonomous-builder-step-status {
+  font-size: 0.8rem;
+  color: var(--text-color-secondary);
+}
+
+.autonomous-builder-step.completed .autonomous-builder-step-status {
+  color: var(--success-color);
+}
+
+.autonomous-builder-step.failed .autonomous-builder-step-status {
+  color: var(--error-color);
+}
+
+/* ===== Output Log ===== */
+
+.autonomous-builder-output {
+  background: var(--surface-0);
+  border: 1px solid var(--border-color);
+  border-radius: 6px;
+  height: 120px;
+  overflow-y: auto;
+  padding: 8px;
+  font-family: monospace;
+  font-size: 0.85rem;
+  color: var(--text-color);
+}
+
+.autonomous-builder-output-item {
+  margin-bottom: 4px;
+  line-height: 1.4;
+}
+
+.autonomous-builder-output-timestamp {
+  color: var(--text-color-tertiary);
+  margin-right: 8px;
+  font-size: 0.75rem;
+}
+
+/* ===== Animations ===== */
+
+@keyframes pulse {
+  0% {
+    box-shadow: 0 0 0 0 rgba(var(--primary-color-rgb), 0.4);
+  }
+  70% {
+    box-shadow: 0 0 0 6px rgba(var(--primary-color-rgb), 0);
+  }
+  100% {
+    box-shadow: 0 0 0 0 rgba(var(--primary-color-rgb), 0);
+  }
+}
+
+/* ===== Responsive Design ===== */
+
+@media screen and (max-width: 768px) {
+  .autonomous-builder-input-group {
+    flex-direction: column;
+  }
+  
+  #autonomous-builder-prompt {
+    margin-bottom: 8px;
+  }
+  
+  .autonomous-builder-button {
+    margin-left: 0;
+    width: 100%;
+  }
+  
+  .autonomous-builder-progress-header {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+  
+  .autonomous-builder-progress-stats {
+    margin-top: 8px;
+  }
+}

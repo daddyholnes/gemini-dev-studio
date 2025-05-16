@@ -21,6 +21,9 @@ document.addEventListener('DOMContentLoaded', () => {
   
   // Setup UI events for terminal toggle
   setupTerminalToggleEvents();
+  
+  // Connect with tab system
+  connectWithTabSystem();
 });
 
 // Create the terminal UI elements
@@ -515,8 +518,118 @@ function maximizeTerminal() {
 
 // Clear terminal
 function clearTerminal() {
-  if (window.podplayTerminal) {
-    window.podplayTerminal.terminal.clear();
+  if (window.terminal) {
+    window.terminal.clear();
+    window.terminal.writeln('Terminal cleared');
+  }
+}
+
+/**
+ * Connect terminal with tab system
+ */
+function connectWithTabSystem() {
+  // Find terminal tab button
+  const terminalBtn = document.getElementById('terminal-btn');
+  if (terminalBtn) {
+    // Already handled by interface-fix.js, but add any terminal-specific behavior
+    terminalBtn.addEventListener('click', function() {
+      // Initialize or focus terminal when tab is activated
+      setTimeout(() => {
+        if (window.terminal && typeof window.terminal.focus === 'function') {
+          window.terminal.focus();
+        }
+        
+        // If the terminal is in a panel that's now visible, make sure it fits properly
+        if (window.terminal && typeof window.terminal.fit === 'function') {
+          window.terminal.fit();
+        }
+      }, 100);
+    });
+  }
+  
+  // Connect terminal panel with the terminal instance
+  const terminalPanel = document.getElementById('terminal-panel');
+  const terminalElement = document.getElementById('terminal');
+  
+  if (terminalPanel && terminalElement && !terminalElement.querySelector('.xterm')) {
+    // Initialize xterm.js if not already done
+    if (window.xterm && !window.terminal) {
+      window.terminal = new window.xterm.Terminal({
+        cursorBlink: true,
+        fontSize: 14,
+        fontFamily: 'monospace',
+        theme: {
+          background: '#0f172a',
+          foreground: '#e2e8f0',
+          cursor: '#8b5cf6'
+        }
+      });
+      
+      // Open terminal in the terminal element
+      window.terminal.open(terminalElement);
+      window.terminal.writeln('Podplay Build Terminal 🐻💜');
+      window.terminal.writeln('Type commands to interact with your environment!');
+      
+      // Set up keyboard input
+      window.terminal.onData(data => {
+        // In a real implementation, this would send the data to a backend shell
+        if (data === '\r') { // Enter key
+          const command = currentCommand.trim();
+          window.terminal.writeln('');
+          handleCommand(command);
+          currentCommand = '';
+          window.terminal.write('\r\n$ ');
+        } else if (data === '\u007F') { // Backspace
+          if (currentCommand.length > 0) {
+            currentCommand = currentCommand.substr(0, currentCommand.length - 1);
+            window.terminal.write('\b \b');
+          }
+        } else {
+          currentCommand += data;
+          window.terminal.write(data);
+        }
+      });
+      
+      // Initialize with prompt
+      let currentCommand = '';
+      window.terminal.write('$ ');
+    }
+  }
+}
+
+/**
+ * Handle a terminal command
+ */
+function handleCommand(command) {
+  if (!command) return;
+  
+  if (command === 'clear') {
+    clearTerminal();
+  } else if (command === 'help') {
+    window.terminal.writeln('Available commands:');
+    window.terminal.writeln('  help - Show this help');
+    window.terminal.writeln('  clear - Clear terminal');
+    window.terminal.writeln('  ls - List files');
+    window.terminal.writeln('  echo [text] - Print text');
+    window.terminal.writeln('  buildmode - Toggle Build Mode');
+  } else if (command === 'ls') {
+    window.terminal.writeln('index.html');
+    window.terminal.writeln('js/');
+    window.terminal.writeln('css/');
+    window.terminal.writeln('assets/');
+  } else if (command.startsWith('echo ')) {
+    const text = command.substring(5);
+    window.terminal.writeln(text);
+  } else if (command === 'buildmode') {
+    window.terminal.writeln('Toggling Build Mode...');
+    if (window.buildMode) {
+      window.buildMode.toggleBuildMode();
+    } else {
+      window.terminal.writeln('Build Mode not initialized!');
+    }
+  } else {
+    window.terminal.writeln(`Command not found: ${command}`);
+    window.terminal.writeln('Type "help" for available commands');
   }
 }
 
@@ -525,8 +638,8 @@ function loadScript(src) {
   return new Promise((resolve, reject) => {
     const script = document.createElement('script');
     script.src = src;
-    script.onload = resolve;
-    script.onerror = reject;
+    script.onload = () => resolve();
+    script.onerror = () => reject(new Error(`Failed to load script: ${src}`));
     document.head.appendChild(script);
   });
 }

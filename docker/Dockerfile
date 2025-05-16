@@ -22,11 +22,11 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
 RUN curl https://get.wasmer.io -sSf | sh
 
 # Copy requirements and install Python dependencies
-COPY backend/requirements.txt .
+COPY ./backend/requirements.txt /app/
 RUN pip install --upgrade pip && pip install -r requirements.txt
 
-# Install MCP Toolkit
-RUN npm install -g @modelcontextprotocol/mcp-toolkit
+# Install MCP related packages
+RUN npm install -g @google-labs/mcp-core @google-labs/mcp-server @google-labs/palm-lite
 
 # Copy the rest of the application
 COPY . .
