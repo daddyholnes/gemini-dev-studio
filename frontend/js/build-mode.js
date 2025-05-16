@@ -60,10 +60,87 @@ class BuildMode {
       // Show loading indicator
       this.showLoading(true);
       
-      // Load WebContainer API
-      const { WebContainer } = await import('https://cdn.jsdelivr.net/npm/@webcontainer/api@1.1.0/dist/index.js');
+      let WebContainer;
+      
+      console.log('🛠️ Build Mode: Initializing WebContainer...');
+      
+      // Multiple fallback options to ensure WebContainer loads
+      try {
+        // APPROACH 1: Try loading from CDN with timeout protection
+        console.log('🛠️ Build Mode: Attempting to load WebContainer from jsdelivr CDN...');
+        const module = await Promise.race([
+          import('https://cdn.jsdelivr.net/npm/@webcontainer/api@1.1.0/dist/index.js'),
+          new Promise((_, reject) => setTimeout(() => reject(new Error('jsdelivr CDN timeout')), 3000))
+        ]);
+        WebContainer = module.WebContainer;
+        console.log('🛠️ Build Mode: Successfully loaded WebContainer from jsdelivr CDN');
+      } catch (jsdelivrError) {
+        console.log('🛠️ Build Mode: jsdelivr CDN failed:', jsdelivrError.message);
+        
+        try {
+          // APPROACH 2: Try unpkg as alternative CDN
+          console.log('🛠️ Build Mode: Attempting to load WebContainer from unpkg CDN...');
+          const module = await Promise.race([
+            import('https://unpkg.com/@webcontainer/api@1.1.0/dist/index.js'),
+            new Promise((_, reject) => setTimeout(() => reject(new Error('unpkg CDN timeout')), 3000))
+          ]);
+          WebContainer = module.WebContainer;
+          console.log('🛠️ Build Mode: Successfully loaded WebContainer from unpkg CDN');
+        } catch (unpkgError) {
+          console.log('🛠️ Build Mode: unpkg CDN failed:', unpkgError.message);
+          
+          // APPROACH 3: Use local fallback script
+          console.log('🛠️ Build Mode: All CDNs failed, using local fallback');
+          
+          // Check if it's already loaded
+          if (window.WebContainer) {
+            console.log('🛠️ Build Mode: Local WebContainer already available');
+            WebContainer = window.WebContainer;
+          } else {
+            // Load our clean version of the WebContainer API
+            console.log('🛠️ Build Mode: Loading clean local WebContainer API');
+            
+            const script = document.createElement('script');
+            script.src = './lib/webcontainer-api-clean.js';
+            document.head.appendChild(script);
+            
+            // Wait for the script to load
+            await new Promise((resolve, reject) => {
+              script.onload = () => {
+                console.log('🛠️ Build Mode: Local WebContainer script loaded');
+                resolve();
+              };
+              script.onerror = (error) => {
+                console.error('🛠️ Build Mode: Failed to load local WebContainer script', error);
+                reject(new Error('Failed to load local WebContainer script'));
+              };
+              
+              // Additional timeout for script loading
+              setTimeout(() => {
+                if (!window.WebContainer) {
+                  console.log('🛠️ Build Mode: Loading timeout, forcing local fallback');
+                  // Force include the original fallback as last resort
+                  const fallbackScript = document.createElement('script');
+                  fallbackScript.src = './lib/webcontainer-api.js';
+                  document.head.appendChild(fallbackScript);
+                  setTimeout(resolve, 500); // Give a moment for script to execute
+                }
+              }, 2000);
+            });
+            
+            // After script is loaded, get the WebContainer object
+            if (window.WebContainer) {
+              console.log('🛠️ Build Mode: Successfully loaded local WebContainer');
+              WebContainer = window.WebContainer;
+            } else {
+              throw new Error('Failed to load WebContainer from any source');
+            }
+          }
+        }
+      }
       
       // Create WebContainer instance
+      console.log('🛠️ Build Mode: Booting WebContainer...');
       this.webContainer = await WebContainer.boot();
       
       // Connect with Docker environment if available

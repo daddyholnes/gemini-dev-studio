@@ -4,9 +4,20 @@ set -e
 # Set up MCP config directory
 mkdir -p ~/.mcp
 
+# Start the FastAPI Docker MCP service in the background
+echo "Starting Docker MCP Service..."
+cd /app/backend
+python -m uvicorn fastapi_app:app --host 0.0.0.0 --port 5001 --reload &
+
+# Set up MCP config directory
+mkdir -p ~/.mcp
+
 # Copy the MCP configuration to the right location
 cat > ~/.mcp/config.json << 'EOF'
 {
+  "docker": {
+    "url": "http://localhost:5001/api/docker"
+  },
   "mcpServers": {
     "github": {
       "command": "npx",

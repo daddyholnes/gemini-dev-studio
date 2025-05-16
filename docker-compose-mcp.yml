@@ -1,0 +1,86 @@
+version: '3'
+
+services:
+  # Brave Search MCP Server
+  brave-search:
+    image: mcpserver/brave-search:latest
+    container_name: docker-brave
+    ports:
+      - "8811:8811"
+    environment:
+      - PORT=8811
+      - BRAVE_API_KEY=${BRAVE_API_KEY}
+    restart: unless-stopped
+    volumes:
+      - brave-search-data:/data
+    networks:
+      - mcp-network
+
+  # Filesystem MCP Server
+  filesystem:
+    image: mcpserver/filesystem:latest
+    container_name: docker-filesystem
+    ports:
+      - "8812:8812"
+    environment:
+      - PORT=8812
+    volumes:
+      - ./mcp-files:/data
+      - ./mcp-config:/config
+    restart: unless-stopped
+    networks:
+      - mcp-network
+
+  # GitHub MCP Server
+  github:
+    image: mcpserver/github:latest
+    container_name: docker-github
+    ports:
+      - "8813:8813"
+    environment:
+      - PORT=8813
+      - GITHUB_TOKEN=${GITHUB_TOKEN}
+    restart: unless-stopped
+    volumes:
+      - github-data:/data
+    networks:
+      - mcp-network
+
+  # Time Service MCP Server
+  time-service:
+    image: mcpserver/time:latest
+    container_name: docker-time
+    ports:
+      - "8814:8814"
+    environment:
+      - PORT=8814
+    restart: unless-stopped
+    networks:
+      - mcp-network
+
+  # Main Podplay App (serving frontend with proper CORS headers)
+  podplay-web:
+    image: node:18-alpine
+    container_name: podplay-web
+    working_dir: /app
+    volumes:
+      - ./:/app
+    ports:
+      - "3000:3000"
+    command: >
+      sh -c "cd /app && 
+             npm install express && 
+             node server.js"
+    environment:
+      - PORT=3000
+    restart: unless-stopped
+    networks:
+      - mcp-network
+
+volumes:
+  brave-search-data:
+  github-data:
+
+networks:
+  mcp-network:
+    driver: bridge

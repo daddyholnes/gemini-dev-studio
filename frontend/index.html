@@ -9,6 +9,7 @@
     <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
     <link href="css/chat.css" rel="stylesheet">
     <link href="css/memory-panel.css" rel="stylesheet">
+    <link href="css/model-switcher.css" rel="stylesheet">
     <style>
         :root {
             --primary: #8b5cf6;
@@ -394,9 +395,128 @@
                 </div>
             </div>
             
-            <div class="flex-1 flex overflow-hidden">
+            <div class="flex-1 flex flex-col">
                 <!-- Panel containers for different tabs -->
-                <div id="build-panel" class="flex-1 flex flex-col"><!-- Build panel content --></div>
+                <div id="build-panel" class="flex-1 flex flex-col">
+                    <!-- Docker Management Panel -->
+                    <div class="h-full flex flex-col">
+                        <!-- Header -->
+                        <div class="px-6 py-4 border-b border-gray-700 flex items-center justify-between">
+                            <div>
+                                <h2 class="text-xl font-semibold text-white">Docker Management</h2>
+                                <p class="text-sm text-gray-400">Manage containers and images in your environment</p>
+                            </div>
+                            <div class="flex items-center space-x-2">
+                                <button id="refresh-containers" class="flex items-center space-x-1 px-3 py-1.5 bg-gray-700 hover:bg-gray-600 rounded-md text-sm text-gray-200 transition-colors">
+                                    <i class="material-icons text-base">refresh</i>
+                                    <span>Refresh</span>
+                                </button>
+                            </div>
+                        </div>
+                        
+                        <!-- Main Content -->
+                        <div class="flex-1 overflow-hidden grid grid-cols-1 md:grid-cols-3 gap-6 p-6">
+                            <!-- Containers Panel -->
+                            <div class="bg-gray-800 rounded-xl shadow-lg overflow-hidden flex flex-col">
+                                <div class="px-4 py-3 border-b border-gray-700 bg-gray-800 flex justify-between items-center">
+                                    <h3 class="font-medium text-gray-200">Containers</h3>
+                                    <span id="containers-count" class="bg-gray-700 text-gray-300 text-xs px-2 py-1 rounded-full">0</span>
+                                </div>
+                                <div id="docker-containers" class="flex-1 overflow-y-auto p-2 space-y-2">
+                                    <div class="animate-pulse flex items-center justify-center p-8">
+                                        <div class="text-gray-500">Loading containers...</div>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <!-- Run Container Panel -->
+                            <div class="bg-gray-800 rounded-xl shadow-lg overflow-hidden flex flex-col">
+                                <div class="px-4 py-3 border-b border-gray-700 bg-gray-800">
+                                    <h3 class="font-medium text-gray-200">Run New Container</h3>
+                                </div>
+                                <div class="p-4 space-y-4">
+                                    <div>
+                                        <label for="docker-image" class="block text-sm font-medium text-gray-300 mb-1">Image Name</label>
+                                        <div class="mt-1 relative rounded-md shadow-sm">
+                                            <input type="text" id="docker-image" 
+                                                   class="bg-gray-700 text-white placeholder-gray-400 block w-full pl-3 pr-10 py-2 border border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+                                                   placeholder="e.g., nginx:latest">
+                                        </div>
+                                    </div>
+                                    
+                                    <div>
+                                        <label class="block text-sm font-medium text-gray-300 mb-1">Port Mappings</label>
+                                        <div id="port-mappings" class="space-y-2">
+                                            <div class="flex space-x-2">
+                                                <input type="text" placeholder="Host Port" 
+                                                       class="flex-1 bg-gray-700 text-white placeholder-gray-400 px-3 py-2 border border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent">
+                                                <div class="flex items-center text-gray-400">:</div>
+                                                <input type="text" placeholder="Container Port" 
+                                                       class="flex-1 bg-gray-700 text-white placeholder-gray-400 px-3 py-2 border border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent">
+                                                <button class="text-gray-400 hover:text-red-400">
+                                                    <i class="material-icons">remove_circle</i>
+                                                </button>
+                                            </div>
+                                        </div>
+                                        <button id="add-port-mapping" class="mt-2 text-xs text-purple-400 hover:text-purple-300 flex items-center">
+                                            <i class="material-icons text-sm mr-1">add</i> Add Port Mapping
+                                        </button>
+                                    </div>
+                                    
+                                    <div class="pt-2">
+                                        <button id="run-container" class="w-full flex items-center justify-center px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-purple-600 hover:bg-purple-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-purple-500 transition-colors">
+                                            <i class="material-icons text-base mr-2">play_arrow</i>
+                                            Run Container
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <!-- System Info Panel -->
+                            <div class="bg-gray-800 rounded-xl shadow-lg overflow-hidden flex flex-col">
+                                <div class="px-4 py-3 border-b border-gray-700 bg-gray-800">
+                                    <h3 class="font-medium text-gray-200">System Information</h3>
+                                </div>
+                                <div class="p-4 space-y-4">
+                                    <div class="p-3 bg-gray-700 rounded-lg">
+                                        <div class="flex items-center justify-between mb-1">
+                                            <span class="text-sm font-medium text-gray-300">Docker Status</span>
+                                            <span id="docker-status" class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-900 text-green-200">
+                                                <span class="w-2 h-2 mr-1 rounded-full bg-green-400"></span>
+                                                Connected
+                                            </span>
+                                        </div>
+                                        <div class="text-xs text-gray-400">Version: <span id="docker-version">-</span></div>
+                                    </div>
+                                    
+                                    <div class="p-3 bg-gray-700 rounded-lg">
+                                        <div class="text-sm font-medium text-gray-300 mb-1">Resources</div>
+                                        <div class="space-y-2">
+                                            <div>
+                                                <div class="flex justify-between text-xs mb-1">
+                                                    <span class="text-gray-400">CPU Usage</span>
+                                                    <span id="cpu-usage" class="font-mono">-</span>
+                                                </div>
+                                                <div class="w-full bg-gray-600 rounded-full h-1.5">
+                                                    <div id="cpu-usage-bar" class="bg-purple-500 h-1.5 rounded-full" style="width: 0%"></div>
+                                                </div>
+                                            </div>
+                                            <div>
+                                                <div class="flex justify-between text-xs mb-1">
+                                                    <span class="text-gray-400">Memory Usage</span>
+                                                    <span id="memory-usage" class="font-mono">-</span>
+                                                </div>
+                                                <div class="w-full bg-gray-600 rounded-full h-1.5">
+                                                    <div id="memory-usage-bar" class="bg-purple-500 h-1.5 rounded-full" style="width: 0%"></div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
                 <div id="chat-panel" class="flex-1 flex flex-col h-full chat-container" style="display:block;">
                     <!-- Chat Messages - Taking most of the space -->
                     <div id="chat-messages" class="chat-messages">
@@ -412,49 +532,57 @@
                     </div>
                     
                     <!-- Chat Input - Fixed at bottom -->
-                    <div class="chat-controls mt-auto">
-                        <form id="chat-form" class="flex flex-col">
-                            <textarea 
-                                id="chat-input" 
-                                class="w-full p-3 bg-gray-800 text-white rounded-md border border-gray-700 mb-2 focus:outline-none focus:border-purple-500"
-                                placeholder="Ask me anything..."
-                                rows="2"
-                            ></textarea>
-                            <div class="flex justify-between">
-                                <div class="flex space-x-3 media-controls">
-                                    <button type="button" id="screenshare-btn" class="media-btn" title="Share your screen">
-                                        <span class="material-icons">screen_share</span>
-                                    </button>
-                                    <button type="button" id="video-btn" class="media-btn" title="Start video">
-                                        <span class="material-icons">videocam</span>
-                                    </button>
-                                    <button type="button" id="file-btn" class="media-btn" title="Upload file">
+                    <div class="chat-controls">
+                        <form id="chat-form">
+                            <!-- Model selector will be inserted here by model-switcher.js -->
+                            <div id="model-selector-placeholder"></div>
+                            <div class="chat-input-container">
+                                <div class="flex-1">
+                                    <textarea 
+                                        id="chat-input" 
+                                        rows="1" 
+                                        placeholder="Message Mama Bear..."
+                                        spellcheck="true"
+                                        autocomplete="off"
+                                        autocorrect="on"
+                                        autocapitalize="on"
+                                    ></textarea>
+                                </div>
+                                <div class="flex items-center gap-2">
+                                    <button type="button" class="media-btn" id="attach-file-btn" title="Attach file">
                                         <span class="material-icons">attach_file</span>
                                     </button>
-                                    <button type="button" id="mic-btn" class="media-btn" title="Start voice recording">
+                                    <button type="button" class="media-btn" id="mic-btn" title="Start voice recording">
                                         <span class="material-icons">mic</span>
                                     </button>
+                                    <button type="submit" class="send-btn" id="send-message-btn" title="Send message">
+                                        <span class="material-icons">send</span>
+                                    </button>
                                 </div>
-                                <div>
-                    <div class="p-4 border-b border-gray-700">
+                            </div>
+                        </form>
+                    </div>
+                    
+                    <!-- Development Tools Panel -->
+                    <div class="p-4 border-t border-gray-700 bg-gray-800">
                         <h2 class="text-sm uppercase tracking-wider text-gray-400 mb-3">Development Tools</h2>
                         <div class="space-y-2">
-                            <button class="mcp-tool-btn" data-tool="docker-brave">
+                            <button class="mcp-tool-btn w-full text-left p-2 rounded hover:bg-gray-700 transition-colors" data-tool="docker-brave">
                                 <div class="flex justify-between items-center">
                                     <span>Web Search</span>
-                                    <span class="bg-green-500 text-xs px-1 rounded">MCP</span>
+                                    <span class="bg-green-500 text-xs px-1.5 py-0.5 rounded">MCP</span>
                                 </div>
                             </button>
-                            <button class="mcp-tool-btn" data-tool="docker-filesystem">
+                            <button class="mcp-tool-btn w-full text-left p-2 rounded hover:bg-gray-700 transition-colors" data-tool="docker-filesystem">
                                 <div class="flex justify-between items-center">
                                     <span>Filesystem</span>
-                                    <span class="bg-green-500 text-xs px-1 rounded">MCP</span>
+                                    <span class="bg-green-500 text-xs px-1.5 py-0.5 rounded">MCP</span>
                                 </div>
                             </button>
-                            <button class="mcp-tool-btn" data-tool="docker-github">
+                            <button class="mcp-tool-btn w-full text-left p-2 rounded hover:bg-gray-700 transition-colors" data-tool="docker-github">
                                 <div class="flex justify-between items-center">
                                     <span>GitHub</span>
-                                    <span class="bg-green-500 text-xs px-1 rounded">MCP</span>
+                                    <span class="bg-green-500 text-xs px-1.5 py-0.5 rounded">MCP</span>
                                 </div>
                             </button>
                             <button class="mcp-tool-btn" data-tool="docker-time">
@@ -496,6 +624,11 @@
     
     <!-- Scripts -->
     <script src="js/multimodal.js"></script>
+    <script src="js/chat-layout.js"></script>
+    <script src="js/docker-mcp-client.js"></script>
+    <script src="js/docker-manager.js"></script>
+    <!-- Model Switcher - Handles all model selection functionality -->
+    <script src="js/model-switcher.js"></script>
     <!-- Podplay Build Core Modules -->
     <script src="js/audio-chat.js"></script>
     <script src="js/image-pasting.js"></script>
@@ -505,10 +638,6 @@
     <script src="js/podplay-chat.js"></script>
     <!-- WebContainer Fallback (Load before other scripts) -->
     <script src="js/webcontainer-fallback.js"></script>
-    
-    <!-- Model Selector for API Quota Management -->
-    <link rel="stylesheet" href="css/model-selector.css">
-    <script src="js/model-selector.js"></script>
     
     <!-- Build Mode -->
     <link rel="stylesheet" href="css/build-mode.css">
