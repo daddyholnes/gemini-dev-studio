@@ -19,6 +19,8 @@ api_keys.txt
 *serviceaccount*
 *google-credentials*
 *-c291c95989bf.json
+podplay-build-beta-4f52cbb569c1.json
+*.json.private
 
 # Sensitive conversation histories
 *-Handle-With-Care.txt
